@@ -375,33 +375,42 @@ namespace FoodPantryParser
             var orderSheets = new List<Ordersheet>();
             foreach (var file in Files)
             {
-                Ordersheet orderSheet;
-                using (var package = new ExcelPackage(file))
+                Ordersheet orderSheet = null;
+                try
                 {
-                    //get the first worksheet in the workbook
-                    orderSheet = new Ordersheet();
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
-                    orderSheet.OrderDate = (DateTime)ExcelRowIterator.GetCellValue(worksheet, "B12");
-                    //orderSheet.NewClients = Convert.ToInt32(ExcelRowIterator.GetCellValue(worksheet, "C10"));
-                    //orderSheet.Vouchers = Convert.ToInt32(ExcelRowIterator.GetCellValue(worksheet, "E10"));
-                    var consecutiveSkips = 0;
-                    foreach (var row in SpreadsheetUtilities.ExcelRowIterator.ReadRowsFromExcel(worksheet))
+                    using (var package = new ExcelPackage(file))
                     {
-                        //if two rows (InvalidRowsBetweenOrders) have been skipped, we're done.
-                        if (ShouldStopProcessing(consecutiveSkips))
-                            break;
-
-                        if (IsSkippableRow(row))
+                        //get the first worksheet in the workbook
+                        orderSheet = new Ordersheet();
+                        ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+                        orderSheet.OrderDate = (DateTime)ExcelRowIterator.GetCellValue(worksheet, "B12");
+                        //orderSheet.NewClients = Convert.ToInt32(ExcelRowIterator.GetCellValue(worksheet, "C10"));
+                        //orderSheet.Vouchers = Convert.ToInt32(ExcelRowIterator.GetCellValue(worksheet, "E10"));
+                        var consecutiveSkips = 0;
+                        foreach (var row in SpreadsheetUtilities.ExcelRowIterator.ReadRowsFromExcel(worksheet))
                         {
-                            consecutiveSkips++;
-                            continue;
-                        }
+                            //if two rows (InvalidRowsBetweenOrders) have been skipped, we're done.
+                            if (ShouldStopProcessing(consecutiveSkips))
+                                break;
 
-                        var order = CreateOrderFromRow(row, worksheet);
-                        orderSheet.Orders.Add(order);
-                        consecutiveSkips = 0; //reset skipped
+                            if (IsSkippableRow(row))
+                            {
+                                consecutiveSkips++;
+                                continue;
+                            }
+
+                            var order = CreateOrderFromRow(row, worksheet);
+                            orderSheet.Orders.Add(order);
+                            consecutiveSkips = 0; //reset skipped
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error in file " + file + ". " + "\r\n" + ex.InnerException);
+                    Console.ReadLine();
+                }
+
                 orderSheets.Add(orderSheet);
             }
             AllOrdersExcelReportGenerator.CreateReport(Path.Combine(OutputFolder, "all" + ".xlsx"), "Report", "All Orders", orderSheets);
