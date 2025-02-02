@@ -407,7 +407,7 @@ namespace FoodPantryParser
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error in file " + file + ". " + "\r\n" + ex.InnerException);
+                    Console.WriteLine("Error in file " + file + ". Possibly missing date. " + "\r\n" + ex.InnerException);
                     Console.ReadLine();
                 }
 

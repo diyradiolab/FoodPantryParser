@@ -63,8 +63,9 @@ namespace FoodPantryParser
                         CreateReports(month, year);
                         return true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine("Error: " + ex.Message);
                         MainMenu();
                     }
                     return false;
