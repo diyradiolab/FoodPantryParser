@@ -66,6 +66,7 @@ namespace FoodPantryParser
                     catch (Exception ex)
                     {
                         Console.WriteLine("Error: " + ex.Message);
+                        Console.ReadLine();
                         MainMenu();
                     }
                     return false;
