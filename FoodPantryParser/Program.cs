@@ -89,9 +89,11 @@ namespace FoodPantryParser
             Console.WriteLine($"You entered: {new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Local).ToString("MMMM, yyyy")}");
             Console.WriteLine("Is this correct: y/n");
             ConsoleKeyInfo keyInfo = Console.ReadKey();
-            char keyPressed = keyInfo.KeyChar;
+            char keyPressed = char.ToLower(keyInfo.KeyChar);
+            
             switch (keyPressed)
             {
+               
                 case 'y':
                     return (month, year);
                 case 'n':
