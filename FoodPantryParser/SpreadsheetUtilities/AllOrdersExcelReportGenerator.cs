@@ -13,8 +13,6 @@ namespace FoodPantryParser.SpreadsheetUtilities
     {
         public static void CreateReport(string filePath, string sheetName, string reportTitle, List<Ordersheet> orderSheets)
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
             using (var package = new ExcelPackage())
             {
                 var worksheet = package.Workbook.Worksheets.Add(sheetName);

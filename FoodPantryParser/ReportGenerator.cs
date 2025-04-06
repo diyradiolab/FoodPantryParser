@@ -71,12 +71,22 @@ namespace FoodPantryParser
             Console.WriteLine("Creating Monthly reports for each agency...");
             Console.WriteLine("-----------------------------------");
             GenerateByAgencyReportData();
+            Console.WriteLine("Combining Monthly reports for each agency...");
+            Console.WriteLine("-----------------------------------");
+            CombineByAgencyReportData();
             Console.WriteLine();
             Console.WriteLine("Creating daily total reports...");
             Console.WriteLine("-----------------------------------");
             GenerateByDateReportData();
             Console.WriteLine();
             Console.WriteLine("FINISHED!");
+        }
+
+        private void CombineByAgencyReportData()
+        {
+            // Call the combination function
+            var combiner = new ExcelCombiner();
+            combiner.CombineSpreadsheets(ByAgencyOutputFolder, OutputFolder + @"\March2025TabbedAgencyReports.xlsx");
         }
 
         private void ManageDirectories()

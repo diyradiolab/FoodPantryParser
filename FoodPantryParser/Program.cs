@@ -14,10 +14,12 @@ namespace FoodPantryParser
         public static string OutputFolder => $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\FPReport";
         internal const int InvalidRowsBetweenOrders = 10; // After two rows are encountered with no data, we know there are no more entries. 1 OR 2 is common. 10 is generous.
 
+
         static void Main(string[] args)
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            // Set the EPPlus license context for version 8.0
 
+            ExcelPackage.License.SetNonCommercialOrganization("<Your Noncommercial Organization>");
             bool showMenu = true;
             while (showMenu)
             {
@@ -25,6 +27,8 @@ namespace FoodPantryParser
             }
             Shutdown(4, 350);
         }
+
+
 
         public static void Shutdown(int ticks, int interval)
         {

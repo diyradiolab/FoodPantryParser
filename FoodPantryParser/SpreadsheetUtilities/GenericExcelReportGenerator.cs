@@ -12,7 +12,6 @@ namespace FoodPantryParser.SpreadsheetUtilities
     {
         public static void CreateReport<T>(string filePath, string sheetName, List<T> data, string reportTitle)
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             using (var package = new ExcelPackage())
             {

@@ -70,6 +70,9 @@ namespace FoodPantryParser.SpreadsheetUtilities
             return worksheet.Cells[cellLocation.Start.Row, cellLocation.Start.Column].Value;
         }
 
-
+        public static void CombineExcelFilesToTabbedSpreadSheet()
+        { 
+        
+        }
     }
 }
