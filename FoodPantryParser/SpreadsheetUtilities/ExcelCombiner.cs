@@ -14,8 +14,6 @@ namespace FoodPantryParser.SpreadsheetUtilities
         public Dictionary<int, double> ColumnTotals { get; set; } = new Dictionary<int, double>();
 
         public int NonZeroSumOrdersCount { get; set; } = 0;
-
-        public HashSet<DateTime> ZeroDatesAcrossAllAgencies { get; set; } = new HashSet<DateTime>();
     }
 
     public class ExcelCombiner
@@ -98,8 +96,20 @@ namespace FoodPantryParser.SpreadsheetUtilities
                                 int startRow = 1;
                                 if (includeFileNameHeader)
                                 {
+                                    // Count columns to include (excluding skipped ones)
+                                    int includedCols = 0;
+                                    for (int c = 1; c <= cols; c++)
+                                    {
+                                        string headerText = Convert.ToString(sourceWorksheet.Cells[3, c].Value)?.Trim();
+                                        if (headerText != null && !headerText.Equals("AgencyName", StringComparison.OrdinalIgnoreCase) &&
+                                            !headerText.Equals("AgencyNumber", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            includedCols++;
+                                        }
+                                    }
+
                                     destWorksheet.Cells[1, currentColumn].Value = fileName;
-                                    using (var range = destWorksheet.Cells[1, currentColumn, 1, currentColumn + cols - 1])
+                                    using (var range = destWorksheet.Cells[1, currentColumn, 1, currentColumn + includedCols - 1])
                                     {
                                         range.Merge = true;
                                         range.Style.Font.Bold = true;
@@ -113,13 +123,21 @@ namespace FoodPantryParser.SpreadsheetUtilities
                                 int dateColIndex = -1;
                                 int sumOrdersColIndex = -1;
                                 List<int> sumColumnIndices = new List<int>();
+                                HashSet<int> columnsToSkip = new HashSet<int>();
 
                                 for (int c = 1; c <= cols; c++)
                                 {
                                     string headerText = Convert.ToString(sourceWorksheet.Cells[sourceStartRow - 1, c].Value)?.Trim();
                                     if (headerText != null)
                                     {
-                                        if (headerText.Equals("ReportDate", StringComparison.OrdinalIgnoreCase))
+                                        if (headerText.Equals("AgencyName", StringComparison.OrdinalIgnoreCase) ||
+                                            headerText.Equals("AgencyNumber", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            columnsToSkip.Add(c);
+                                            logAction($"  - Skipping column at position {c}: {headerText}");
+                                            continue;
+                                        }
+                                        else if (headerText.Equals("ReportDate", StringComparison.OrdinalIgnoreCase))
                                         {
                                             dateColIndex = c;
                                             logAction($"  - Identified Report Date column at position {c}");
@@ -254,6 +272,11 @@ namespace FoodPantryParser.SpreadsheetUtilities
 
                                 for (int c = 1; c <= cols; c++)
                                 {
+                                    if (columnsToSkip.Contains(c))
+                                    {
+                                        continue; // Skip copying this column
+                                    }
+
                                     sourceToDestColMap[c] = destCol;
 
                                     var headerText = sourceWorksheet.Cells[sourceStartRow - 1, c].Value;
@@ -354,91 +377,20 @@ namespace FoodPantryParser.SpreadsheetUtilities
                                 }
 
                                 int lastCol = destCol - 1;
-                                var borderRange = destWorksheet.Cells[startRow, lastCol, totalsRow, lastCol];
-                                borderRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Medium;
+                                if (lastCol > currentColumn) // Ensure we only add border if columns were added
+                                {
+                                    var borderRange = destWorksheet.Cells[startRow, lastCol, totalsRow, lastCol];
+                                    borderRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Medium;
+                                }
 
-                                currentColumn += (destCol - currentColumn) + 1;
+                                currentColumn = lastCol + 2; // Move to next section with a gap
 
-                                logAction($"  - Added {lastDataRow - sourceStartRow + 1} rows and {destCol - currentColumn} columns from {fileName}");
+                                logAction($"  - Added {lastDataRow - sourceStartRow + 1} rows and {destCol - currentColumn + 1} columns from {fileName}");
                             }
                         }
                         catch (Exception ex)
                         {
                             logAction($"Error processing file {fileName}: {ex.Message}");
-                        }
-                    }
-
-                    // Calculate zero-order days
-                    var allZeroDates = new HashSet<DateTime>();
-                    var allAgencies = excelFiles.Select(f => Path.GetFileNameWithoutExtension(f)).ToHashSet();
-                    logAction($"All agencies: {string.Join(", ", allAgencies)}");
-
-                    foreach (var dateEntry in this.sharedState.DateToSumOrdersValues)
-                    {
-                        DateTime date = dateEntry.Key.Date;
-                        var agencyOrders = dateEntry.Value;
-
-                        logAction($"Checking date {date.ToShortDateString()}:");
-                        foreach (var agency in allAgencies)
-                        {
-                            if (agencyOrders.ContainsKey(agency))
-                            {
-                                logAction($"  - {agency}: {agencyOrders[agency]}");
-                            }
-                            else
-                            {
-                                logAction($"  - {agency}: No data");
-                            }
-                        }
-
-                        bool allZero = allAgencies.All(agency =>
-                            agencyOrders.ContainsKey(agency) && agencyOrders[agency] == 0);
-
-                        if (allZero)
-                        {
-                            allZeroDates.Add(date);
-                            logAction($"  => Found zero date: {date.ToShortDateString()}");
-                        }
-                    }
-
-                    this.sharedState.ZeroDatesAcrossAllAgencies = allZeroDates;
-                    logAction($"Total zero days: {allZeroDates.Count}");
-
-                    // Update totals label
-                    if (this.totalsLabelRow > 0 && this.totalsLabelColumn > 0 && this.totalsWorksheet != null)
-                    {
-                        int zeroDaysCount = this.sharedState.ZeroDatesAcrossAllAgencies.Count;
-                        logAction($"Updating totals label with zero days count: {zeroDaysCount}");
-                        this.totalsWorksheet.Cells[this.totalsLabelRow, this.totalsLabelColumn].Value =
-                            $"TOTALS ({zeroDaysCount})";
-                    }
-                    else
-                    {
-                        logAction("Warning: Totals label position not set properly.");
-                    }
-
-                    // Highlight zero-order rows
-                    if (highlightZeroRows)
-                    {
-                        logAction("Highlighting zero-order rows:");
-                        foreach (var rowEntry in this.rowDateMap)
-                        {
-                            int uniqueRowKey = rowEntry.Key;
-                            DateTime rowDate = rowEntry.Value;
-                            int destRow = this.sourceToDestRowMap[uniqueRowKey];
-
-                            logAction($"  - Row key {uniqueRowKey}, Date {rowDate.ToShortDateString()}, DestRow {destRow}");
-                            if (this.sharedState.ZeroDatesAcrossAllAgencies.Contains(rowDate))
-                            {
-                                logAction($"    => Highlighting row {destRow}");
-                                for (int c = 1; c <= destWorksheet.Dimension.Columns; c++)
-                                {
-                                    destWorksheet.Cells[destRow, c].Style.Fill.PatternType =
-                                        OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                    destWorksheet.Cells[destRow, c].Style.Fill.BackgroundColor.SetColor(
-                                        System.Drawing.Color.LightPink);
-                                }
-                            }
                         }
                     }
 
