@@ -91,6 +91,7 @@
     <Compile Include="ReportModels\WeekdayCalendar.cs" />
     <Compile Include="SpreadsheetModels\Agency.cs" />
     <Compile Include="SpreadsheetModels\Calendar.cs" />
+    <Compile Include="SpreadsheetModels\Geography.cs" />
     <Compile Include="SpreadsheetModels\Order.cs" />
     <Compile Include="SpreadsheetModels\Ordersheet.cs" />
     <Compile Include="SpreadsheetUtilities\AllOrdersExcelReportGenerator.cs" />

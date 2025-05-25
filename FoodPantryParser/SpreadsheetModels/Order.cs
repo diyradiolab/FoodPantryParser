@@ -15,5 +15,6 @@ namespace FoodPantryParser.SpreadsheetModels
         public int Children { get; set; }
         public bool HasVoucher { get; set; }
         public bool IsNewClient { get; set; }
+        public bool IsCity { get; set; }
     }
 }

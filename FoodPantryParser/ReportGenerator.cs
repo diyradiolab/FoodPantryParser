@@ -135,6 +135,11 @@ namespace FoodPantryParser
             {
                 order.IsNewClient = true;
             }
+            if (row["P"] != null)
+            {
+                order.IsCity = Geography.IsCity(row["P"].ToString());
+            }
+
             return order;
         }
 
@@ -406,6 +411,10 @@ namespace FoodPantryParser
             sb.AppendLine("Total Vouchers: " + totalVouchers);
             sb.AppendLine("Total New Clients: " + totalNewClients);
             sb.AppendLine("Total Orders: " + allOrders.Count);
+            sb.AppendLine("Total Persons: " + allOrders.Sum(x=>x.Adults + x.Children));
+            sb.AppendLine($"Total City Orders: {allOrders.Count(x => x.IsCity)}");
+            sb.AppendLine($"Total City Persons: {allOrders.Where(x => x.IsCity).Sum(x => x.Adults + x.Children)}");
+
             sb.AppendLine();
 
             var missingDates = FindMissingDates(allOrders, CurrentDates);
