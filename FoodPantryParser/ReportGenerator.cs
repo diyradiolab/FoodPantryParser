@@ -408,13 +408,23 @@ namespace FoodPantryParser
         {
             var sb = new StringBuilder();
             sb.AppendLine("Number of order forms processed: " + Files.Length);
-            sb.AppendLine("Total Vouchers: " + totalVouchers);
-            sb.AppendLine("Total New Clients: " + totalNewClients);
-            sb.AppendLine("Total Orders: " + allOrders.Count);
+            sb.AppendLine();
+            sb.AppendLine("Total Households: " + allOrders.Count);
             sb.AppendLine("Total Persons: " + allOrders.Sum(x=>x.Adults + x.Children));
-            sb.AppendLine($"Total City Orders: {allOrders.Count(x => x.IsCity)}");
-            sb.AppendLine($"Total City Persons: {allOrders.Where(x => x.IsCity).Sum(x => x.Adults + x.Children)}");
-
+            sb.AppendLine("Total Amount: " + allOrders.Count * 75);
+            sb.AppendLine();
+            sb.AppendLine($"Total City Households: {allOrders.Count(x => x.IsCity)}");
+            sb.AppendLine($"Total City Adults: {allOrders.Where(x => x.IsCity).Sum(x => x.Adults)}");
+            sb.AppendLine($"Total City Children: {allOrders.Where(x => x.IsCity).Sum(x => x.Children)}");
+            sb.AppendLine();
+            sb.AppendLine($"Total County Households: {allOrders.Count(x => !x.IsCity)}");
+            sb.AppendLine($"Total County Adults: {allOrders.Where(x => !x.IsCity).Sum(x => x.Adults)}");
+            sb.AppendLine($"Total County Children: {allOrders.Where(x => !x.IsCity).Sum(x => x.Children)}");
+            sb.AppendLine();
+            sb.AppendLine("Total New Clients: " + totalNewClients); 
+            sb.AppendLine("Total Vouchers: " + totalVouchers);
+            sb.AppendLine("Total Meals: " + allOrders.Sum(x => x.Adults + x.Children) * 21);
+            sb.AppendLine("Agencies with Orders: " + allOrders.Select(a=>a.AgencyName).Distinct().Count());
             sb.AppendLine();
 
             var missingDates = FindMissingDates(allOrders, CurrentDates);
