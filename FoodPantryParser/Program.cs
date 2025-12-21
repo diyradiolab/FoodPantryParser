@@ -10,7 +10,7 @@ namespace FoodPantryParser
 {
     internal static class Program
     {
-        public static string DataFolder => @"C:\Users\Alan Hess\Desktop\FoodPantryData";
+        public static string DataFolder => $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\FoodPantryData";
         public static string OutputFolder => $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\FPReport";
         internal const int InvalidRowsBetweenOrders = 10; // After two rows are encountered with no data, we know there are no more entries. 1 OR 2 is common. 10 is generous.
 

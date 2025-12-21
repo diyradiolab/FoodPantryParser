@@ -86,7 +86,7 @@ namespace FoodPantryParser
         {
             // Call the combination function
             var combiner = new ExcelCombiner();
-            combiner.CombineSpreadsheets(ByAgencyOutputFolder, OutputFolder + @"\March2025TabbedAgencyReports.xlsx");
+            combiner.CombineSpreadsheets(ByAgencyOutputFolder, OutputFolder + @"\TabbedAgencyReports.xlsx");
         }
 
         private void ManageDirectories()
