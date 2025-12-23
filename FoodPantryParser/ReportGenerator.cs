@@ -17,7 +17,7 @@ namespace FoodPantryParser
         public string ByDateOutputFolder { get; set; }
         public string ByAgencyOutputFolder { get; set; }
         public List<DateTime> CurrentDates { get; set; }
-        public string[] Files { get; set; }
+        public List<string> Files { get; set; } = new List<string>();
         public int CurrentMonth { get; set; }
         public int CurrentYear { get; set; }
 
@@ -30,7 +30,17 @@ namespace FoodPantryParser
             InvalidRowsBetweenOrders = invalidRowsBetweenOrders;
             ByDateOutputFolder = OutputFolder + @"\ByDate";
             ByAgencyOutputFolder = OutputFolder + @"\ByAgency";
-            Files = Directory.GetFiles(DataFolder, "*.xls", SearchOption.TopDirectoryOnly);
+            var tempFiles = Directory.GetFiles(DataFolder, "*.xls", SearchOption.TopDirectoryOnly).ToList();
+            // Filter out hidden files
+            foreach (string file in tempFiles)
+            {
+                FileAttributes attributes = File.GetAttributes(file);
+                if ((attributes & FileAttributes.Hidden) != FileAttributes.Hidden)
+                {
+                    Files.Add(file);
+                }
+            }
+
             CurrentDates = WeekdayCalendar.GetWeekdaysInMonth(currentMonth, currentYear);
             CurrentMonth = currentMonth;
             CurrentYear = currentYear;
@@ -407,7 +417,7 @@ namespace FoodPantryParser
         private StringBuilder WriteSummaryInfoReport(int totalVouchers, int totalNewClients, List<Order> allOrders)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("Number of order forms processed: " + Files.Length);
+            sb.AppendLine("Number of order forms processed: " + Files.Count());
             sb.AppendLine();
             sb.AppendLine("Total Households: " + allOrders.Count);
             sb.AppendLine("Total Persons: " + allOrders.Sum(x=>x.Adults + x.Children));

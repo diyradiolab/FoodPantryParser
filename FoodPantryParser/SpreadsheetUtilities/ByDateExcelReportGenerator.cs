@@ -31,7 +31,7 @@ namespace FoodPantryParser.SpreadsheetUtilities
                 int row = 3;
 
                 // Add data table header
-                var currentCol = 0;
+                //var currentCol = 0;
                 var properties = typeof(T).GetProperties();
                 for (int i = 0; i < properties.Length + 2; i++) //+2 for vouchers and new
                 {
